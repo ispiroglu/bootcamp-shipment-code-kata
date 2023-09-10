@@ -10,21 +10,21 @@ public class Basket {
     private List<Product> products;
 
     public ShipmentSize getShipmentSize() {
-        var sizeMap = new HashMap<ShipmentSize, Integer>();
+        if (products == null || products.isEmpty())
+            throw new IllegalArgumentException("There is no item in basket.");
+
+        var sizeCountMap = new HashMap<ShipmentSize, Integer>();
         var maxSize = SMALL;
         for (var product: products ) {
             var productSize = product.getSize();
-            var sizeCount = sizeMap.get(productSize);
-            sizeCount = sizeCount == null ? 0 : sizeCount;
+            var sizeCount = sizeCountMap.getOrDefault(productSize, 0);
 
-            if (sizeCount == 2) {
+            if (sizeCount == 2)
                 return productSize.nextSize();
-            }
 
-            sizeMap.put(productSize, sizeCount + 1);
-            if (productSize.isLargerThan(maxSize)) {
+            sizeCountMap.put(productSize, sizeCount + 1);
+            if (productSize.isLargerThan(maxSize))
                 maxSize = productSize;
-            }
         }
 
         return maxSize;
