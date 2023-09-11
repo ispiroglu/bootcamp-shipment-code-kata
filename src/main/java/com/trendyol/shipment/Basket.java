@@ -10,8 +10,7 @@ public class Basket {
     private List<Product> products;
 
     public ShipmentSize getShipmentSize() {
-        if (products == null || products.isEmpty())
-            throw new IllegalArgumentException("There is no item in basket.");
+        validateProductCount();
 
         var sizeCountMap = new HashMap<ShipmentSize, Integer>();
         var maxSize = SMALL;
@@ -36,5 +35,10 @@ public class Basket {
 
     public void setProducts(List<Product> products) {
         this.products = products;
+    }
+
+    private void validateProductCount() {
+        if (products == null || products.isEmpty())
+            throw new IllegalArgumentException("There is no item in basket.");
     }
 }
