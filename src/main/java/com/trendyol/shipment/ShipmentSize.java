@@ -15,7 +15,7 @@ public enum ShipmentSize {
                 sizes[this.ordinal() + 1];
     }
 
-    public boolean isLargerThan(ShipmentSize size) {
-        return this.ordinal() > size.ordinal();
+    public boolean isNotLast() {
+        return this != X_LARGE;
     }
 }

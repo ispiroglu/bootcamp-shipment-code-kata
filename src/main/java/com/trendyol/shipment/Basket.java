@@ -1,7 +1,9 @@
 package com.trendyol.shipment;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.trendyol.shipment.ShipmentSize.*;
 
@@ -10,23 +12,22 @@ public class Basket {
     private List<Product> products;
 
     public ShipmentSize getShipmentSize() {
-        validateProductCount();
+        validateProductCountAndThrowException();
+        int threshold = 3;
 
-        var sizeCountMap = new HashMap<ShipmentSize, Integer>();
-        var maxSize = SMALL;
-        for (var product: products ) {
-            var productSize = product.getSize();
-            var sizeCount = sizeCountMap.getOrDefault(productSize, 0);
+        var productSizeMap = getProducts().stream().collect(Collectors.groupingBy(Product::getSize, Collectors.counting()));
+        var productSizes = new ArrayList<>(productSizeMap.keySet());
+        var highestShipmentSize = getHighestShipmentSize(productSizes);
 
-            if (sizeCount == 2)
-                return productSize.nextSize();
+        if (products.size() < threshold)
+            return highestShipmentSize;
 
-            sizeCountMap.put(productSize, sizeCount + 1);
-            if (productSize.isLargerThan(maxSize))
-                maxSize = productSize;
-        }
-
-        return maxSize;
+        return productSizeMap.entrySet().stream()
+            .filter(shipmentSize -> shipmentSize.getValue() >= threshold)
+            .filter(shipmentSizeLongEntry -> shipmentSizeLongEntry.getKey().isNotLast())
+            .findFirst()
+            .map(shipmentType -> shipmentType.getKey().nextSize())
+            .orElse(highestShipmentSize);
     }
 
     public List<Product> getProducts() {
@@ -37,8 +38,12 @@ public class Basket {
         this.products = products;
     }
 
-    private void validateProductCount() {
+    private void validateProductCountAndThrowException() {
         if (products == null || products.isEmpty())
             throw new IllegalArgumentException("There is no item in basket.");
+    }
+
+    private ShipmentSize getHighestShipmentSize(List<ShipmentSize> shipmentSizeList) {
+        return shipmentSizeList.stream().max(Comparator.comparing(Enum::ordinal)).orElse(SMALL);
     }
 }
